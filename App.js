@@ -1,7 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Keyboard } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Keyboard, ScrollView } from 'react-native';
 import { theme } from './color';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+const STORAGE_KEY = "@todos"
 
 export default function App() {
 
@@ -11,19 +14,31 @@ export default function App() {
   const travel = () => {setWorking(false); Keyboard.dismiss(); setText("");}
   const work = () => {setWorking(true); Keyboard.dismiss(); setText("");}
   const onChangeText = (payload) => setText(payload);
-  const addToDo = () => {
+  const saveTodos = async (toSave) => {
+    try {
+      const jsonValue = JSON.stringify(toSave);
+      await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
+    } catch (e) {
+      alert("Saving Error...");
+    }
+  }
+  const loadTodos = async () => {
+    const jsonVal = await AsyncStorage.getItem(STORAGE_KEY);
+    setTodos(JSON.parse(jsonVal));
+  }
+  useEffect(() => {
+    loadTodos();
+  }, []);
+  const addToDo = async () => {
     if(text === "") return;
 
     // save to do
-    const newTodos = Object.assign(
-      {}, 
-      todos, 
-      {[Date.now()]: {text, work: working}, 
-    });
+    const newTodos = {...todos, [Date.now()] : { text, working}};
     setTodos(newTodos);
+    await saveTodos(newTodos);
     setText("");
   }
-  
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
@@ -45,6 +60,15 @@ export default function App() {
           placeholder={working ? "Add a To Do" : "Where do you wanna go?"}
           style={styles.input}
         />
+        <ScrollView>
+          {todos && Object.keys(todos).map(key => 
+            todos[key].working === working ? 
+              <View style={styles.todo} key={key}>
+                <Text style={styles.todoText}>{todos[key].text}</Text>
+              </View> : null
+            ) 
+          }
+        </ScrollView>
       </View>
     </View>
   );
@@ -70,7 +94,19 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 30,
-    marginTop: "5%",
+    marginVertical: "5%",
     fontSize: 15,
   },
+  todo: {
+    backgroundColor: theme.grey,
+    marginBottom: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+  },
+  todoText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500",
+  }
 });
