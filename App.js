@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Keyboard, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Keyboard, ScrollView, Alert } from 'react-native';
 import { theme } from './color';
 import React, { useState, useEffect } from 'react';
+import { Fontisto } from '@expo/vector-icons';
 
 const STORAGE_KEY = "@todos"
 
@@ -38,6 +39,24 @@ export default function App() {
     await saveTodos(newTodos);
     setText("");
   }
+  const deleteTodo = async (key) => {
+    Alert.alert(
+      "Delete To Do", 
+      "Are you sure?", [
+      {text: "Cancel"},
+      {
+        text: "I'm sure", 
+        style: "destructive",
+        onPress: () => {
+          const newTodos = {...todos};
+          delete newTodos[key];
+          setTodos(newTodos);
+          saveTodos(newTodos);
+        },
+      },
+    ]);
+    
+  }
 
   return (
     <View style={styles.container}>
@@ -65,6 +84,9 @@ export default function App() {
             todos[key].working === working ? 
               <View style={styles.todo} key={key}>
                 <Text style={styles.todoText}>{todos[key].text}</Text>
+                <TouchableOpacity onPress={() => deleteTodo(key)}>
+                  <Fontisto name="trash" size={18} color="gray" />
+                </TouchableOpacity>
               </View> : null
             ) 
           }
@@ -103,6 +125,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderRadius: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   todoText: {
     color: "white",
