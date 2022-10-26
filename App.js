@@ -5,15 +5,34 @@ import { theme } from './color';
 import React, { useState, useEffect } from 'react';
 import { Fontisto } from '@expo/vector-icons';
 
-const STORAGE_KEY = "@todos"
+const STORAGE_KEY = "@todos";
+const DOMAIN_KEY = "@domain";
 
 export default function App() {
 
-  const [working ,setWorking] = useState(true);
+  const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [todos, setTodos] = useState({});
-  const travel = () => {setWorking(false); Keyboard.dismiss(); setText("");}
-  const work = () => {setWorking(true); Keyboard.dismiss(); setText("");}
+  const travel = async () => {
+    try {
+      await AsyncStorage.setItem(DOMAIN_KEY, JSON.stringify(!working));
+    } catch (e) {
+      alert("Saving Error...");
+    }
+    setWorking(false); 
+    Keyboard.dismiss(); 
+    setText("");
+  }
+  const work = async () => {
+    try {
+      await AsyncStorage.setItem(DOMAIN_KEY, JSON.stringify(!working));
+    } catch (e) {
+      alert("Saving Error...");
+    }
+    setWorking(true); 
+    Keyboard.dismiss(); 
+    setText("");
+  }
   const onChangeText = (payload) => setText(payload);
   const saveTodos = async (toSave) => {
     try {
@@ -26,15 +45,20 @@ export default function App() {
   const loadTodos = async () => {
     const jsonVal = await AsyncStorage.getItem(STORAGE_KEY);
     setTodos(JSON.parse(jsonVal));
+
+    const domain = await AsyncStorage.getItem(DOMAIN_KEY);
+    setWorking(JSON.parse(domain));
   }
+
   useEffect(() => {
     loadTodos();
   }, []);
+
   const addToDo = async () => {
     if(text === "") return;
 
     // save to do
-    const newTodos = {...todos, [Date.now()] : { text, working}};
+    const newTodos = {...todos, [Date.now()] : { text, working, done: false}};
     setTodos(newTodos);
     await saveTodos(newTodos);
     setText("");
@@ -55,7 +79,15 @@ export default function App() {
         },
       },
     ]);
+  }
+  const completeTodo = (key) => {
+    const isDone = todos[key].done;
+    const newTodos = {...todos};
     
+    newTodos[key] = {...newTodos[key], done: isDone ? false : true};
+    
+    setTodos(newTodos);
+    saveTodos(newTodos);
   }
 
   return (
@@ -84,6 +116,12 @@ export default function App() {
             todos[key].working === working ? 
               <View style={styles.todo} key={key}>
                 <Text style={styles.todoText}>{todos[key].text}</Text>
+                <TouchableOpacity onPress={() => completeTodo(key)}>
+                  <Fontisto name="check" size={18} color={todos[key].done ? "green" : "gray"} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => completeTodo(key)}>
+                  <Fontisto name="eraser" size={18} color="gray" />
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => deleteTodo(key)}>
                   <Fontisto name="trash" size={18} color="gray" />
                 </TouchableOpacity>
