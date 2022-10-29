@@ -89,6 +89,9 @@ export default function App() {
     setTodos(newTodos);
     saveTodos(newTodos);
   }
+  const modifyTodo = (key) => {
+    
+  }
 
   return (
     <View style={styles.container}>
@@ -119,7 +122,7 @@ export default function App() {
                 <TouchableOpacity onPress={() => completeTodo(key)}>
                   <Fontisto name="check" size={18} color={todos[key].done ? "green" : "gray"} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => completeTodo(key)}>
+                <TouchableOpacity onPress={() => modifyTodo(key)}>
                   <Fontisto name="eraser" size={18} color="gray" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => deleteTodo(key)}>
