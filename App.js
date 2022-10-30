@@ -44,10 +44,14 @@ export default function App() {
   }
   const loadTodos = async () => {
     const jsonVal = await AsyncStorage.getItem(STORAGE_KEY);
-    setTodos(JSON.parse(jsonVal));
+    if (jsonVal) {
+      setTodos(JSON.parse(jsonVal));
+    }
 
     const domain = await AsyncStorage.getItem(DOMAIN_KEY);
-    setWorking(JSON.parse(domain));
+    if (domain) {
+      setWorking(JSON.parse(domain));
+    }
   }
 
   useEffect(() => {
@@ -90,7 +94,7 @@ export default function App() {
     saveTodos(newTodos);
   }
   const modifyTodo = (key) => {
-    
+
   }
 
   return (
