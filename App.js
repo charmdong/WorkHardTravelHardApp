@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Keyboard, ScrollView, Alert } from 'react-native';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, TextInput, Keyboard, ScrollView, Alert } from 'react-native';
 import { theme } from './color';
 import React, { useState, useEffect } from 'react';
 import { Fontisto } from '@expo/vector-icons';
@@ -68,21 +68,32 @@ export default function App() {
     setText("");
   }
   const deleteTodo = async (key) => {
-    Alert.alert(
-      "Delete To Do", 
-      "Are you sure?", [
-      {text: "Cancel"},
-      {
-        text: "I'm sure", 
-        style: "destructive",
-        onPress: () => {
-          const newTodos = {...todos};
-          delete newTodos[key];
-          setTodos(newTodos);
-          saveTodos(newTodos);
+    // 접속한 OS가 무엇인지 확인
+    if(Platform.OS === "web") {
+      const ok = confirm("Do you want to delete this To Do?");
+      if(ok) {
+        const newTodos = {...todos};
+        delete newTodos[key];
+        setTodos(newTodos);
+        saveTodos(newTodos);
+      }
+    } else {
+      Alert.alert(
+        "Delete To Do", 
+        "Are you sure?", [
+        {text: "Cancel"},
+        {
+          text: "I'm sure", 
+          style: "destructive",
+          onPress: () => {
+            const newTodos = {...todos};
+            delete newTodos[key];
+            setTodos(newTodos);
+            saveTodos(newTodos);
+          },
         },
-      },
-    ]);
+      ]);
+    }
   }
   const completeTodo = (key) => {
     const isDone = todos[key].done;
